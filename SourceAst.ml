@@ -26,7 +26,7 @@ and typ =
   | TypInteger
   | TypBoolean
   | TypArray  of typ
-      
+
 (* Un bloc de code est une liste d'instructions *)
 and block = instruction list
 and instruction =
@@ -42,9 +42,9 @@ and expression =
   | Binop     of binop * expression * expression (* Opération binaire   *)
   | FunCall   of call                            (* Appel de fonction   *)
   | NewArray  of expression * typ                (* Création de tableau *)
-      
+
 and call = string * expression list (* Appel de fonction *)
-  
+
 and literal =
   | Int  of int  (* Constante entière   *)
   | Bool of bool (* Constante booléenne *)
@@ -53,16 +53,16 @@ and location =
   | Identifier  of string   (* Variable en mémoire *)
   | ArrayAccess of a_access (* Case d'un tableau   *)
 and a_access = expression * expression
-      
+
 and binop =
   | Add (* +  *) | Mult (* *  *) | Sub (* - *)
   | Eq  (* == *) | Neq  (* != *)
   | Lt  (* <  *) | Le   (* <= *)
   | And (* && *) | Or   (* || *)
-    
+
 (* Cadeau pour le débogage : un afficheur. *)
 open Printf
-      
+
 let rec print_typ = function
   | TypInteger    -> "integer"
   | TypBoolean    -> "boolean"
@@ -130,12 +130,12 @@ let rec print_formals = function
 let print_ret_type = function
   | None -> ""
   | Some t -> sprintf "(%s) " (print_typ t)
-    
+
 let print_function f_id f_info =
   sprintf "%s(%s) (\n%s%s)\n"
     f_id (print_formals f_info.formals)
     (print_symb_tbl f_info.locals) (print_block 1 f_info.code)
-  
+
 let print_program prog =
   List.fold_right (fun (f_id, f_info) s ->
     sprintf "%s\n\n%s" (print_function f_id f_info) s
