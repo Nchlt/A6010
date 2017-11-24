@@ -22,8 +22,9 @@ let () =
   let lb = Lexing.from_channel c in
   let p = SourceParser.program SourceLexer.token lb in
   close_in c;
-  SourceTypeChecker.typecheck_program p;
-  let p = SourcetoUntyped.erase_program p in
+  (*SourceTypeChecker.typecheck_program p;*) (* inclus dans SourceToTyped *)
+  let p = SourceToTyped.erase_program p in (* avant on avait SourcetoUntyped *)
+  let p = TypedToUntyped.erase_program p in
   let p = UntypedtoGoto.destructure_program p in
   let p = GototoIr.flatten_program p in
   let p = IrtoAllocated.allocate_program !reg_allocation p in

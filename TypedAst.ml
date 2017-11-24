@@ -1,8 +1,10 @@
 (* Arbre de syntaxe annoté par type *)
+open SourceTypeChecker
 
 module Symb_Tbl = SourceAst.Symb_Tbl
 
 module S = SourceAst
+
 
 type function_info    = S.function_info
 type program          = S.program
@@ -13,13 +15,14 @@ type call             = S.call
 type literal          = S.literal
 type binop            = S.binop
 
+type ( 'a, 'e ) annotated_element = { annot: 'a  ;
+                                      elt  :  'e }
 
-type typed_expression =  typ     *      S.expression * annotated_element
-type typed_location   =  typ     *      S.location   * annotated_element
-type typed_call       = (typ option) *  S.call       * annotated_element
+and typed_expression =  (typ,            S.expression)  annotated_element
+and typed_location   =  (typ,            S.location)    annotated_element
+and typed_call       =  ((typ option),   S.call )       annotated_element
 
-and 'a 'e annotated_element = { annot: 'a  ;
-                                elt  :  'e }
+
 and block = instruction list
 
 and instruction =
@@ -42,32 +45,30 @@ and location =
 
 and a_access = typed_expression * typed_expression
 
+(* Fonction pour comparer les types *)
+let comparetype t1 t2 =
+  not (t1 <> t2)
+
 (* Les constructeurs *)
 
 let mk_arrayaccess te1 te2 =
-  let (type_te1, _, _) = te1 in
-  let (type_te2, _, _) = te2 in
+  let type_te1 = te1.annot in
+  let type_te2 = te2.annot in
   match type_te1, type_te2 with
-  | TypeArray(t), TypeInteger ->
-   { annot = t; elt: ArrayAccess(te1, te2) }
+  | S.TypArray(t), S.TypInteger -> { annot = t; elt = ArrayAccess(te1, te2) }
   | _ -> failwith "ArrayAccess type error"
 
-let mk_newarray te typ =
-  let (type_te, _, _) = te in
-  match (type_te, typ) with
-  | TypeArray(t), t -> { annot = t; elt = NewArray(te, typ) }
-  | _ -> failwith "NewArray type error"
 
 let mk_binop op te1 te2 =
-  let (type_te1, _, _) = te1 in
-  let (type_te2, _, _) = te2 in
-  match type_te1, type_te2 with
-  | t, t -> { annot = t; elt = Binop(op, te1, te2)}
+  let type_te1 = te1.annot in
+  let type_te2 = te2.annot in
+  match (comparetype type_te1 type_te2) with
+  | true -> { annot = type_te1 ; elt = Binop(op, te1, te2) }
   | _ -> failwith "Binop type error"
 
 let mk_set tloc te =
-  let (type_tloc, _, _) = tloc in
-  let (type_te, _, _)   = te   in
-  match type_tloc, type_te with
-  | t, t -> { annot = t; elt = Set(tloc, te) }
+  let type_tloc = tloc.annot  in
+  let type_te  = te.annot     in
+  match (comparetype type_tloc type_te) with
+  | true -> { annot = type_tloc; elt = Set(tloc, te) }
   | _ -> failwith "Set type error"
