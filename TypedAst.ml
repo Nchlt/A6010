@@ -38,7 +38,7 @@ and expression =
 
 and location =
   | Identifier  of string   (* Variable en mémoire *)
-  | ArrayAccess of typed_a_access (* Case d'un tableau   *)
+  | ArrayAccess of a_access (* Case d'un tableau   *)
 
 and a_access = typed_expression * typed_expression
 
@@ -49,5 +49,25 @@ let mk_arrayaccess te1 te2 =
   let (type_te2, _, _) = te2 in
   match type_te1, type_te2 with
   | TypeArray(t), TypeInteger ->
-    { annot = t; elt: ArrayAccess(te1, te2) }
-  | _ -> failwith "Found ArrayAccess violation"
+   { annot = t; elt: ArrayAccess(te1, te2) }
+  | _ -> failwith "ArrayAccess type error"
+
+let mk_newarray te typ =
+  let (type_te, _, _) = te in
+  match (type_te, typ) with
+  | TypeArray(t), t -> { annot = t; elt = NewArray(te, typ) }
+  | _ -> failwith "NewArray type error"
+
+let mk_binop op te1 te2 =
+  let (type_te1, _, _) = te1 in
+  let (type_te2, _, _) = te2 in
+  match type_te1, type_te2 with
+  | t, t -> { annot = t; elt = Binop(op, te1, te2)}
+  | _ -> failwith "Binop type error"
+
+let mk_set tloc te =
+  let (type_tloc, _, _) = tloc in
+  let (type_te, _, _)   = te   in
+  match type_tloc, type_te with
+  | t, t -> { annot = t; elt = Set(tloc, te) }
+  | _ -> failwith "Set type error"
