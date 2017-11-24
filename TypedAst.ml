@@ -45,9 +45,13 @@ and location =
 
 and a_access = typed_expression * typed_expression
 
+
 (* Fonction pour comparer les types *)
 let comparetype t1 t2 =
   not (t1 <> t2)
+
+(* Une exception pour les erreurs de typage *)
+exception Type_error of string * string * string
 
 (* Les constructeurs *)
 
@@ -56,7 +60,10 @@ let mk_arrayaccess te1 te2 =
   let type_te2 = te2.annot in
   match type_te1, type_te2 with
   | S.TypArray(t), S.TypInteger -> { annot = t; elt = ArrayAccess(te1, te2) }
-  | _ -> failwith "ArrayAccess type error"
+  | _ ->
+    let str_t1 = S.print_typ type_te1 in
+    let str_t2 = S.print_typ type_te2 in
+    raise (Type_error ("ArrayAccess type violation" , str_t1, str_t2))
 
 
 let mk_binop op te1 te2 =
